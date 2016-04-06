@@ -2,6 +2,7 @@
 
 #include "UnrealRed.h"
 #include "UnrealRedCharacter.h"
+#include "Pickup.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AUnrealRedCharacter
@@ -56,6 +57,8 @@ void AUnrealRedCharacter::SetupPlayerInputComponent(class UInputComponent* Input
 	InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
+	InputComponent->BindAction("Collect", IE_Pressed, this, &AUnrealRedCharacter::CollectPickups);
+
 	InputComponent->BindAxis("MoveForward", this, &AUnrealRedCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AUnrealRedCharacter::MoveRight);
 
@@ -70,6 +73,33 @@ void AUnrealRedCharacter::SetupPlayerInputComponent(class UInputComponent* Input
 	// handle touch devices
 	InputComponent->BindTouch(IE_Pressed, this, &AUnrealRedCharacter::TouchStarted);
 	InputComponent->BindTouch(IE_Released, this, &AUnrealRedCharacter::TouchStopped);
+}
+
+void AUnrealRedCharacter::CollectPickups()
+{
+	//Get all overlapping Actors and store them in an array
+	TArray<AActor*> CollectedActors;
+	CollectionSphere->GetOverlappingActors(CollectedActors);
+
+	// For each Actor we collected
+	for (int32 iCollected = 0; iCollected < CollectedActors.Num(); ++iCollected) 
+	{
+		//Cast the actor to APickup
+		APickup* const TestPickup = Cast<APickup>(CollectedActors[iCollected]);
+
+		//If the cast is successful and the pickup is valid and active
+		if (TestPickup && !TestPickup->IsPendingKill() && TestPickup->IsActive()) {
+			//Call the pickup's WasCollected function
+			//Deactivate the pickup
+
+			TestPickup->WasCollected();
+			TestPickup->SetActive(false);
+		}
+
+			
+	}
+		
+		
 }
 
 
