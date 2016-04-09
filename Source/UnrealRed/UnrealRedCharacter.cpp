@@ -3,6 +3,7 @@
 #include "UnrealRed.h"
 #include "UnrealRedCharacter.h"
 #include "Pickup.h"
+#include "BatteryPickup.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AUnrealRedCharacter
@@ -45,6 +46,19 @@ AUnrealRedCharacter::AUnrealRedCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	InitialPower = 2000.f;
+	CharacterPower = InitialPower;
+}
+
+float AUnrealRedCharacter::GetInitialPower()
+{
+	return InitialPower;
+}
+
+float AUnrealRedCharacter::GetCurrentPower()
+{
+	return CharacterPower;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -81,6 +95,8 @@ void AUnrealRedCharacter::CollectPickups()
 	TArray<AActor*> CollectedActors;
 	CollectionSphere->GetOverlappingActors(CollectedActors);
 
+	float CollectedPower = 0;
+
 	// For each Actor we collected
 	for (int32 iCollected = 0; iCollected < CollectedActors.Num(); ++iCollected) 
 	{
@@ -93,12 +109,22 @@ void AUnrealRedCharacter::CollectPickups()
 			//Deactivate the pickup
 
 			TestPickup->WasCollected();
+
+			//Check to see if the pickup is also a battery
+			ABatteryPickup* const TestBattery = Cast<ABatteryPickup>(TestPickup);
+			if (TestBattery) {
+				// Increase collected power
+				CollectedPower += TestBattery->GetPower();
+			}
+
 			TestPickup->SetActive(false);
 		}
 
 			
 	}
-		
+	if (CollectedPower > 0) {
+		UpdatePower(CollectedPower);
+	}
 		
 }
 
@@ -130,6 +156,11 @@ void AUnrealRedCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+void AUnrealRedCharacter::UpdatePower(float PowerChange)
+{
+	CharacterPower = CharacterPower + PowerChange;
 }
 
 void AUnrealRedCharacter::MoveForward(float Value)

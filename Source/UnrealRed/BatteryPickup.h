@@ -20,4 +20,10 @@ public:
 	// Override the WasCollected function - use Implementation because it's a BluePrint Native Event
 	void WasCollected_Implementation() override;
 
+	float GetPower();
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", Meta = (BlueprintProtected = "true"))
+	float BatteryPower;
+
 };

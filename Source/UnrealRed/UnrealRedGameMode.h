@@ -10,6 +10,13 @@ class AUnrealRedGameMode : public AGameMode
 
 public:
 	AUnrealRedGameMode();
+
+	virtual void Tick(float DeltaTime) override;
+
+protected:
+	//The rate at which the character loses power
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Power")
+	float DecayRate;
 };
 
 
