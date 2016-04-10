@@ -42,6 +42,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Power")
 	void UpdatePower(float PowerChange);
 
+	/** Returns CameraBoom subobject **/
+	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	// Returns CollectionSphere subobject
+	FORCEINLINE class USphereComponent* GetSphereComponent() const { return CollectionSphere; }
+
 protected:
 
 	/** Called for forwards/backward input */
@@ -68,28 +75,29 @@ protected:
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
 
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
 	// Called when we press a keyto collect any pickups inside the Collection Sphere
 	UFUNCTION(BlueprintCallable, Category = "Pickups")
-	void CollectPickups();
+		void CollectPickups();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power")
-	float InitialPower;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", Meta = (BlueprintProtected = "true"))
+		float InitialPower;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", Meta = (BlueprintProtected = "true"))
+		float SpeedFactor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Power", Meta = (BlueprintProtected = "true"))
+		float BaseSpeed;
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Power")
+		void PowerChangeEffect();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Power")
 	float CharacterPower;
 
-public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	// Returns CollectionSphere subobject
-	FORCEINLINE class USphereComponent* GetSphereComponent() const { return CollectionSphere; }
 };
 

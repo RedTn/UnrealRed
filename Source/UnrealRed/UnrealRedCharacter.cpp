@@ -49,6 +49,9 @@ AUnrealRedCharacter::AUnrealRedCharacter()
 
 	InitialPower = 2000.f;
 	CharacterPower = InitialPower;
+
+	SpeedFactor = 0.75f;
+	BaseSpeed = 10.0f;
 }
 
 float AUnrealRedCharacter::GetInitialPower()
@@ -161,6 +164,10 @@ void AUnrealRedCharacter::LookUpAtRate(float Rate)
 void AUnrealRedCharacter::UpdatePower(float PowerChange)
 {
 	CharacterPower = CharacterPower + PowerChange;
+	GetCharacterMovement()->MaxWalkSpeed = BaseSpeed + SpeedFactor * CharacterPower;
+
+	//call visual effect
+	PowerChangeEffect();
 }
 
 void AUnrealRedCharacter::MoveForward(float Value)
