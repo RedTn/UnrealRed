@@ -3,6 +3,16 @@
 #include "GameFramework/GameMode.h"
 #include "UnrealRedGameMode.generated.h"
 
+//enum to store the current state of gameplay
+UENUM(BlueprintType)
+enum class EBatteryPlayState
+{
+	EPlaying,
+	EGameOver,
+	EWon,
+	EUnknown
+};
+
 UCLASS(minimalapi)
 class AUnrealRedGameMode : public AGameMode
 {
@@ -17,6 +27,11 @@ public:
 	float GetPowerToWin() const;
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintPure, Category = "Power")
+	EBatteryPlayState GetCurrentState() const;
+
+	void SetCurrentState(EBatteryPlayState NewState);
 
 protected:
 	//The rate at which the character loses power
@@ -33,6 +48,9 @@ protected:
 	// The instance of the HUD
 	UPROPERTY()
 	class UUserWidget* CurrentWidget;
+
+private:
+	EBatteryPlayState CurrentState;
 };
 
 

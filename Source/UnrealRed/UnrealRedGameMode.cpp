@@ -26,10 +26,16 @@ void AUnrealRedGameMode::Tick(float DeltaTime)
 	//Check that we are using the battery collector character
 	AUnrealRedCharacter* MyCharacter = Cast<AUnrealRedCharacter>(UGameplayStatics::GetPlayerPawn(this, 0));
 	if (MyCharacter) {
+		if (MyCharacter->GetCurrentPower() > PowerToWin) {
+			SetCurrentState(EBatteryPlayState::EWon);
+		}
 		//if the character's power is positive
-		if (MyCharacter->GetCurrentPower() > 0) {
+		else if (MyCharacter->GetCurrentPower() > 0) {
 			//decrease the character's power using the decay rate
 			MyCharacter->UpdatePower(-DeltaTime*DecayRate*(MyCharacter->GetInitialPower()));
+		}
+		else {
+			SetCurrentState(EBatteryPlayState::EGameOver);
 		}
 	}
 }
@@ -42,6 +48,7 @@ float AUnrealRedGameMode::GetPowerToWin() const
 void AUnrealRedGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	SetCurrentState(EBatteryPlayState::EPlaying);
 
 	//set score to beat
 	AUnrealRedCharacter* MyCharacter = Cast<AUnrealRedCharacter>(UGameplayStatics::GetPlayerPawn(this, 0));
@@ -55,4 +62,14 @@ void AUnrealRedGameMode::BeginPlay()
 			CurrentWidget->AddToViewport();
 		}
 	}
+}
+
+EBatteryPlayState AUnrealRedGameMode::GetCurrentState() const
+{
+	return CurrentState;
+}
+
+void AUnrealRedGameMode::SetCurrentState(EBatteryPlayState NewState)
+{
+	CurrentState = NewState;
 }
