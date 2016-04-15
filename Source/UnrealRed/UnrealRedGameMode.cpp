@@ -5,6 +5,7 @@
 #include "UnrealRedCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"
+#include "SpawnVolume.h"
 
 AUnrealRedGameMode::AUnrealRedGameMode()
 {
@@ -48,6 +49,18 @@ float AUnrealRedGameMode::GetPowerToWin() const
 void AUnrealRedGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// find all spawn volume actors
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundActors);
+
+	for (auto Actor : FoundActors) {
+		ASpawnVolume* SpawnVolumeActor = Cast<ASpawnVolume>(Actor);
+		if (SpawnVolumeActor) {
+			SpawnVolumeActors.AddUnique(SpawnVolumeActor);
+		}
+	}
+
 	SetCurrentState(EBatteryPlayState::EPlaying);
 
 	//set score to beat
@@ -62,6 +75,7 @@ void AUnrealRedGameMode::BeginPlay()
 			CurrentWidget->AddToViewport();
 		}
 	}
+
 }
 
 EBatteryPlayState AUnrealRedGameMode::GetCurrentState() const
@@ -72,4 +86,51 @@ EBatteryPlayState AUnrealRedGameMode::GetCurrentState() const
 void AUnrealRedGameMode::SetCurrentState(EBatteryPlayState NewState)
 {
 	CurrentState = NewState;
+	HandleNewState(CurrentState);
+}
+
+void AUnrealRedGameMode::HandleNewState(EBatteryPlayState NewState)
+{
+	switch (NewState) {
+	case EBatteryPlayState::EPlaying:
+	{
+		for (ASpawnVolume* Volume : SpawnVolumeActors) {
+			Volume->SetSpawningActive(true);
+		}
+	}
+	break;
+	case EBatteryPlayState::EWon:
+	{
+		for (ASpawnVolume* Volume : SpawnVolumeActors) {
+			Volume->SetSpawningActive(false);
+		}
+	}
+	break;
+	case EBatteryPlayState::EGameOver:
+	{
+		/* Spawn volumes inactive
+		* Block player input
+		* Ragdoll character
+		*/
+		for (ASpawnVolume* Volume : SpawnVolumeActors) {
+			Volume->SetSpawningActive(false);
+		}
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, 0);
+		if (PlayerController) {
+			PlayerController->SetCinematicMode(true, false, false, true, true);
+		}
+		ACharacter* MyCharacter = UGameplayStatics::GetPlayerCharacter(this, 0);
+		if (MyCharacter) {
+			MyCharacter->GetMesh()->SetSimulatePhysics(true);
+			MyCharacter->GetMovementComponent()->MovementState.bCanJump = false;
+		}
+	}
+	break;
+	default:
+	case EBatteryPlayState::EUnknown:
+	{
+
+	}
+	break;
+	}
 }
